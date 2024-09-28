@@ -28,7 +28,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   filteredSearchResults: any[] = [];
   targetInput: any;
 
-  constructor(public themeService: ThemeService, private router: Router, private renderer: Renderer2, private cookieService: AuthService) {}
+  constructor(public themeService: ThemeService,
+              private router: Router,
+              private renderer: Renderer2,
+              private cookieService: AuthService) {}
 
   ngOnInit() {
     this.router.events.subscribe(event => {

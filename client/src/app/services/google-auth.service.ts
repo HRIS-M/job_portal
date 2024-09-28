@@ -1,15 +1,19 @@
-import { Injectable } from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {AuthConfig, OAuthService} from "angular-oauth2-oidc";
 import {environment} from "../../environments/environment";
 import {CredentialService} from "./credential.service";
 import {Router} from "@angular/router";
 import {AlertsService} from "./alerts.service";
 import {AuthService} from "./auth.service";
+import {from, Subject, takeUntil} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
 })
-export class GoogleAuthService {
+export class GoogleAuthService implements OnDestroy {
+
+  private hasLoggedIn = false;
+  private unsubscribe$ = new Subject<void>();
 
   googleAuthConfig: AuthConfig = environment.googleAuthConfig;
   constructor(
@@ -20,29 +24,79 @@ export class GoogleAuthService {
     private router: Router
   ) { }
 
+  ngOnDestroy() {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
+  setOAuth(accessToken: string, idToken: string) {
+    document.cookie = `access_token=${accessToken}; path=/; secure; SameSite=Strict`; // Removed HttpOnly
+    document.cookie = `id_token=${idToken}; path=/; secure; SameSite=Strict`; // Removed HttpOnly
+  }
+
   configureOAuth() {
+    this.logToLocalStorage('Configuring OAuth with Google');
     this.oauthService.configure(this.googleAuthConfig);
     this.loadDiscoveryDocumentAndTryLogin();
   }
 
   loadDiscoveryDocumentAndTryLogin() {
-    this.oauthService.loadDiscoveryDocumentAndTryLogin().then(() => {
-      debugger; // Pause execution here to inspect the state
-      this.logToLocalStorage('Discovery document loaded');
-      if (this.oauthService.hasValidAccessToken()) {
-        this.logToLocalStorage('Valid access token found');
-        this.handleGoogleLogin();
-      } else {
-        this.logToLocalStorage('No valid access token found');
-      }
+    this.oauthService.loadDiscoveryDocument().then(() => {
+      this.logToLocalStorage('Discovery document loaded successfully');
+      this.oauthService.tryLogin({
+        onTokenReceived: (context: any) => {
+          if (!this.hasLoggedIn) {
+            this.handleGoogleLogin();
+            this.hasLoggedIn = true;
+          }
+        }
+      }).then((loggedIn) => {
+        this.logToLocalStorage('Login attempt:'+ loggedIn ? 'Successful' : 'Failed');
+      }).catch(error => {
+        this.logToLocalStorage('Error during login:'+ error);
+      });
     }).catch(error => {
-      this.logToLocalStorage('Error during OAuth configuration: ' + error);
+      this.logToLocalStorage('Error loading discovery document:'+ error);
     });
   }
 
   private logToLocalStorage(message: string) {
     const logs = localStorage.getItem('oauthLogs') || '';
     localStorage.setItem('oauthLogs', logs + message + '\n');
+  }
+
+  handleRedirectCallback() {
+    this.oauthService.tryLogin({
+      onTokenReceived: (context: any) => {
+        const accessToken = this.oauthService.getAccessToken();
+        const idToken = this.oauthService.getIdToken();
+        this.logToLocalStorage('access token: ' + accessToken);
+        this.logToLocalStorage('id token: ' + idToken);
+        this.setOAuth(accessToken, idToken);
+
+        if (!this.hasLoggedIn) {
+          this.handleGoogleLogin();
+          this.hasLoggedIn = true;
+        }
+
+        // Check if the token is expired and refresh if necessary
+        if (this.oauthService.getAccessTokenExpiration() < Date.now() / 1000) {
+          this.oauthService.refreshToken().then(() => {
+            // Update the cookies after refreshing
+            const newAccessToken = this.oauthService.getAccessToken();
+            const newIdToken = this.oauthService.getIdToken();
+            this.setOAuth(newAccessToken, newIdToken);
+          }).catch(error => {
+            console.error('Error refreshing token:', error);
+            // Handle refresh error (e.g., redirect to login)
+          });
+        }
+      }
+    }).then((data) => {
+      console.log(data)
+    }).catch(error => {
+      console.error('Error during login:', error);
+    });
   }
 
   loginWithGoogle() {
@@ -52,6 +106,11 @@ export class GoogleAuthService {
   }
 
   handleGoogleLogin() {
+    from(this.oauthService.loadDiscoveryDocumentAndTryLogin()).pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(response => {
+      this.logToLocalStorage(response+'');
+    });
     this.oauthService.loadUserProfile().then((profile: any) => {
       this.logToLocalStorage('User profile: ' + JSON.stringify(profile));
       const user = {

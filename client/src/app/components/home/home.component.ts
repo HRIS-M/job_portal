@@ -62,7 +62,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   async ngOnInit(): Promise<any> {
-    this.googleAuthService.loadDiscoveryDocumentAndTryLogin();
+    if (window.location.hash) {
+      this.googleAuthService.handleRedirectCallback();
+    }
     this.employeeId = this.cookieService.userID();
     await this.getEmployee(this.employeeId).subscribe((data) => {
 
@@ -76,7 +78,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.setupIntersectionObserver()
     const icons = document.querySelectorAll('.material-icons');
     icons.forEach((icon) => {
       icon.setAttribute('translate', 'no');

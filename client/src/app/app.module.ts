@@ -19,8 +19,11 @@ import {AngularFirestoreModule} from "@angular/fire/compat/firestore";
 import {environment} from "../environments/environment";
 import {AngularFireModule} from "@angular/fire/compat";
 import {SharedPipesModule} from "./shared/modules/shared-pipes.module";
-import {HttpClientModule} from "@angular/common/http";
+import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import {ToastrModule} from "ngx-toastr";
+import {LocationStrategy, PathLocationStrategy} from "@angular/common";
+import {OAuthModule} from "angular-oauth2-oidc";
+import {ErrorInterceptor} from "./DTO/ErrorInterceptor";
 
 @NgModule({
   declarations: [
@@ -51,9 +54,13 @@ import {ToastrModule} from "ngx-toastr";
       preventDuplicates: true,
       maxOpened: 3,
       timeOut: 5000,
-    })
+    }),
+    OAuthModule.forRoot()
   ],
-  providers: [],
+  providers: [
+    { provide: LocationStrategy, useClass: PathLocationStrategy },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {

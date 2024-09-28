@@ -29,12 +29,20 @@ export class AuthService {
     this.cookieService.set('pro-admin-token',token,60*60*24*7);
   }
 
+  clearAuthCookies() {
+    const cookies = ['access_token', 'id_token'];
+    cookies.forEach(cookie => {
+      document.cookie = `${cookie}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+    });
+  }
+
   public logout(){
     this.cookieService.delete('user-token-id');
     this.cookieService.delete('pro-admin-token');
     this.cookieService.delete('organization');
     this.cookieService.delete('admin-token');
     this.cookieService.delete('level');
+    this.clearAuthCookies();
   }
 
   public isExists():boolean{
@@ -97,6 +105,18 @@ export class AuthService {
   public isCookiesAccepted() {
     let cookie = this.cookieService.get('cookies-accepted');
     return cookie.length !== 0;
+  }
+
+  public getOAuth(key:string){
+    return this.cookieService.get(key);
+  }
+
+  public setOAuth(key:string, value:string, expires?:any, path?:any, domain?:any, secure?:boolean){
+    this.cookieService.set(key, value, expires, path, domain, secure);
+  }
+
+  public deleteOAuth(key:string){
+    this.cookieService.delete(key);
   }
 
 }

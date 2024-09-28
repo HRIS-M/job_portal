@@ -60,4 +60,11 @@ export class CredentialService {
     });
     return this.http.delete<any>(`${this.baseUrl}/portal_credentials/delete/${id}`, {headers});
   }
+
+  verifyToken(token: any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': 'Basic ' + btoa('admin:password')
+    });
+    return this.http.get<any>(`${this.baseUrl}/portal_credentials/verify/${token}`, {headers});
+  }
 }
