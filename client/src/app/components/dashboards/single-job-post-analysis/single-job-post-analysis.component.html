@@ -11,14 +11,20 @@
       <div class="col-12">
         <div class="card-1">
           <div class="d-flex align-items-center justify-content-between">
-            <div class="title-1">
-              Job ID: <a class="d-none d-sm-inline" routerLink="/job-details/{{j.jobId}}">{{j.jobId}} </a>
-              <a class="d-inline d-sm-none" routerLink="/job-details/{{j.jobId}}"><i class="material-icons">call_made</i> </a>
-              <i class="fa fa-question-circle" data-bs-toggle="tooltip"
-                 data-bs-placement="top"
-                 data-bs-custom-class="custom-tooltip"
-                 data-bs-title="Check the job details"></i>
+            <div class="d-flex align-items-center gap-2">
+              <div class="title-1">
+                {{j.jobTitle ? j.jobTitle : 'N/A'}}
+              </div>
+              <div class="title-1">
+                <a class="d-none d-sm-inline" routerLink="/job-details/{{j.jobId}}">({{j.jobId}}) </a>
+                <a class="d-inline d-sm-none" routerLink="/job-details/{{j.jobId}}"><i class="material-icons">call_made</i> </a>
+                <i class="fa fa-question-circle" data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   data-bs-custom-class="custom-tooltip"
+                   data-bs-title="Check the job details"></i>
+              </div>
             </div>
+
             <div class="d-flex align-items-center justify-content-between">
               <button class="see-more-btn me-1" *ngIf="j.applicants?.length > maxApplicantsDisplayed" (click)="toggleApplicants(j)">
                 <p class="d-none d-sm-block m-0">See {{ j.showAllApplicants ? 'less' : 'all' }}</p>
@@ -35,10 +41,6 @@
                 </ul>
               </div>
             </div>
-          </div>
-
-          <div class="title-1">
-            Job Title: {{j.jobTitle ? j.jobTitle : 'N/A'}}
           </div>
 
           <table class="table table-hover table-borderless w-100">
