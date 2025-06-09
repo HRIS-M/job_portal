@@ -29,6 +29,7 @@ import {Utilities} from "./shared/utilities/utilities";
 import {HomeComponent} from "./components/home/home.component";
 import {LoginService} from "./services/common/login.service";
 import {WindowService} from "./services/common/window.service";
+import {EmployeeAuthStateService} from "./services/cacheStates/employee-auth-state.service";
 
 @Component({
   selector: 'app-root',
@@ -76,6 +77,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
               private credentialsService: CredentialService,
               private fileUploadService: FileUploadService,
               private reportIssueService: ReportIssueService,
+              private authStateService: EmployeeAuthStateService,
               private commonService: CommonService,
               private alertService: AlertsService,
               private loginService: LoginService,
@@ -89,31 +91,40 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.windowService.nativeSessionStorage &&
       this.windowService.nativeLocalStorage
     ) {
-      this.fetchTokensFromLogin();
-
-      this.loadingScreen();
-
-      try {
-        await this.autoLogin();
-      } catch {
-        // Optional: handle fallback
-      }
-
-      this.route.queryParams.subscribe(params => {
-        const platform = params['platform'] || 'jobPortal';
-        const ref = params['ref'] || 'talentboozt';
-        const promo = params['promo'] || 'no';
-        this.cookieService.createPlatform(platform);
-        this.cookieService.createReferer(ref);
-        this.cookieService.createPromotion(promo);
+      window.addEventListener('cookieConsentAccepted', async () => {
+        await this.startApp();
       });
 
-      this.employeeId = this.cookieService.userID();
-      this.employeeLevel = this.cookieService.level();
-      this.themeService.applyTheme();
+      if (this.isAcceptCookies()) {
+        await this.startApp();
 
-      this.acceptCookiesAndOpenNewsLetter();
+        this.acceptCookiesAndOpenNewsLetter();
+      }
     }
+  }
+
+  async startApp() {
+    this.fetchTokensFromLogin();
+
+    try {
+      await this.autoLogin();
+      this.authStateService.initializeUser().subscribe();
+    } catch {
+      // Do nothing
+    }
+
+    this.route.queryParams.subscribe(params => {
+      const platform = params['platform'] || 'jobPortal';
+      const ref = params['ref'] || 'talentboozt';
+      const promo = params['promo'] || 'no';
+      this.cookieService.createPlatform(platform);
+      this.cookieService.createReferer(ref);
+      this.cookieService.createPromotion(promo);
+    });
+
+    this.employeeId = this.cookieService.userID();
+    this.employeeLevel = this.cookieService.level();
+    this.themeService.applyTheme();
   }
 
   ngAfterViewInit() {
@@ -124,7 +135,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
-    this.markAttendance()
+    if(this.isAcceptCookies())
+      this.markAttendance()
   }
 
   ngOnDestroy() {
@@ -172,9 +184,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             resolve(true);
           });
         },
-        error: () => {
+        error: (err) => {
           this.alertService.successMessage('Claim your free account today!', 'Talent Boozt ✨');
-          reject();
+          reject(err);
         }
       });
     });
@@ -263,9 +275,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   acceptCookiesAndOpenNewsLetter() {
     this.isSubscribe = this.cookieService.isNewsletter();
-    if (this.cookieService.isCookiesAccepted()) {
-      this.isCookiesAccepted = true;
-    }
+    // if (this.cookieService.isCookiesAccepted()) {
+    //   this.isCookiesAccepted = true;
+    // }
 
     if (sessionStorage.getItem('newsLatter') != 'true' && !this.isSubscribe) {
       setTimeout(() => {
@@ -274,6 +286,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         sessionStorage.setItem('newsLatter', 'true');
       }, 15000)
     }
+  }
+
+  isAcceptCookies() {
+    if (this.windowService.nativeLocalStorage) {
+      return localStorage.getItem('TB_COOKIES_ACCEPTED') === 'true';
+    }
+    return false;
   }
 
   toggleTheme() {

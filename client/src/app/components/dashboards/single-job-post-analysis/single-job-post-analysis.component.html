@@ -180,10 +180,13 @@
   </div>
 </div>
 
+<div *ngIf="loading">
+  <app-page-loading></app-page-loading>
+</div>
 <div *ngIf="!loading && serverError">
   <app-failed-to-load-data></app-failed-to-load-data>
 </div>
-<div *ngIf="!jobData || jobData?.length == 0">
+<div *ngIf="!loading && (!jobData || jobData?.length == 0)">
   <app-result-not-found></app-result-not-found>
 </div>
 <div *ngIf="corsError">

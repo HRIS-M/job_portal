@@ -77,9 +77,39 @@
 </head>
 <body class="mat-typography">
 <div id="loading-screen">
-  <img src="./assets/imgs/shared/loading.gif" alt="loading..." width="100%" height="auto">
+  <img src="/assets/imgs/shared/loading.gif" alt="loading..." width="100%" height="auto">
 </div>
-<app-root style="display:none;"></app-root>
+<div id="cookie-banner">
+  <p>
+    We use cookies and tracking technologies essential for security, fraud prevention, and ensuring proper website functionality.
+    We don’t use ads, profiling, or sell any personal data. Learn more in our
+    <a href="https://talentboozt.com/privacy-policy" target="_blank">Privacy Policy</a>.
+  </p>
+  <button id="accept-cookies-btn" style="padding: 0.5rem 1rem;">Understood</button>
+</div>
+
+<app-root style="display: none;"></app-root>
+
+<script>
+  const hasAcceptedCookies = localStorage.getItem('TB_COOKIES_ACCEPTED') === 'true';
+
+  if (!hasAcceptedCookies) {
+    document.getElementById('cookie-banner').style.display = 'block';
+  } else {
+    document.querySelector('app-root').style.display = 'block';
+    document.getElementById('loading-screen').style.display = 'none';
+  }
+
+  document.getElementById('accept-cookies-btn').addEventListener('click', () => {
+    localStorage.setItem('TB_COOKIES_ACCEPTED', 'true');
+    document.getElementById('cookie-banner').style.display = 'none';
+    document.querySelector('app-root').style.display = 'block';
+    document.getElementById('loading-screen').style.display = 'none';
+
+    // Optionally, signal Angular if needed
+    window.dispatchEvent(new Event('cookieConsentAccepted'));
+  });
+</script>
 
 <!--  bootstrap cdn js -->
 <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

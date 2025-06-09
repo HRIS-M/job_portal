@@ -7,9 +7,10 @@ import {CredentialService} from "../../../services/credential.service";
 import {AlertsService} from "../../../services/alerts.service";
 import {AuthService} from "../../../services/auth.service";
 import {commonSearchResults} from "../../../shared/data-store/common-search-results";
-import { HttpErrorResponse } from "@angular/common/http";
 import {LinkedInAuthService} from "../../../services/authentication/linked-in-auth.service";
 import {CommonService} from "../../../services/common/common.service";
+import {EmployeeProfile} from "../../../shared/data-models/cache/EmployeeProfile.model";
+import {EmployeeAuthStateService} from "../../../services/cacheStates/employee-auth-state.service";
 
 @Component({
   selector: 'app-header',
@@ -24,13 +25,9 @@ export class HeaderComponent {
   filteredSearchResults: any[] = [];
   targetInput: any;
 
-  employee: any;
-  employeeId: any;
-  employeeLevel: any;
-  employeeType: any;
-  isTokenFound: boolean = false;
-
   utilities = Utilities;
+
+  employeeProfile: EmployeeProfile | null = null;
 
   constructor(public themeService: ThemeService,
               private router: Router,
@@ -40,13 +37,14 @@ export class HeaderComponent {
               private commonService: CommonService,
               private linkedInAuthService: LinkedInAuthService,
               private alertService: AlertsService,
+              public authState: EmployeeAuthStateService,
               private cookieService: AuthService) {
   }
 
   ngOnInit() {
-    this.employeeId = this.cookieService.userID();
-    this.employeeLevel = this.cookieService.level();
-    this.isTokenFound = this.cookieService.isRefreshToken();
+    this.authState.employee$.subscribe(profile => {
+      this.employeeProfile = profile;
+    });
     this.themeService.applyTheme();
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -61,10 +59,6 @@ export class HeaderComponent {
         }
       }
     });
-
-    if (this.employeeId){
-      this.getEmployee(this.employeeId);
-    }
   }
 
   ngAfterViewInit() {
@@ -72,22 +66,6 @@ export class HeaderComponent {
     icons.forEach((icon) => {
       icon.setAttribute('translate', 'no');
     });
-  }
-
-  getEmployee(id: any) {
-    this.employeeService.getEmployee(id).subscribe(
-      (data) => {
-        this.employee = data;
-        this.credentialsService.fetchCredentialByEmployeeId(this.employeeId).subscribe(
-          (data) => {
-            this.employeeType = data?.role
-          }
-        )
-      },
-      (error: HttpErrorResponse) => {
-        console.log(error)
-      }
-    );
   }
 
   updateActiveClass() {
@@ -142,6 +120,7 @@ export class HeaderComponent {
     this.commonService.logout().subscribe(() => {
       this.cookieService.logout()
       this.removeUnwantedSession()
+      this.authState.clearUser();
       this.linkedInAuthService.logoutFromLinkedIn().then(r => {});
       this.alertService.successMessage('You have been logged out successfully.', 'Success');
     });
@@ -152,12 +131,32 @@ export class HeaderComponent {
     const platform = this.cookieService.getPlatform();
     const promo = this.cookieService.getPromotion();
     const aElm: HTMLAnchorElement = document.createElement('a');
+    const currentUrl = window.location.origin + window.location.pathname;
+    const seekerRedirectParams = new URLSearchParams({
+      plat: platform,
+      ref: referrer,
+      prom: promo,
+      rb: 'CANDIDATE',
+      lv: '1',
+    });
+    const recruiterRedirectParams = new URLSearchParams({
+      plat: platform,
+      ref: referrer,
+      prom: promo,
+      rb: 'RECRUITER',
+      lv: '2',
+    });
+    const shortRedirectParams = new URLSearchParams({
+      plat: platform,
+      ref: referrer,
+      prom: promo,
+    });
     if (profile === 'seeker'){
-      aElm.href = 'https://login.talentboozt.com/login?redirectUri='+window.location.href+'?&plat='+platform+'&ref='+referrer+'&prom='+promo+'&rb=candidate&lv=1';
+      aElm.href = `https://login.talentboozt.com/login?redirectUri=${currentUrl}?&${seekerRedirectParams.toString()}`;
     } else if (profile === 'recruiter'){
-      aElm.href = 'https://login.talentboozt.com/login?redirectUri='+window.location.href+'?&plat='+platform+'&ref='+referrer+'&prom='+promo+'&rb=employer&lv=2';
+      aElm.href = `https://login.talentboozt.com/login?redirectUri=${currentUrl}?&${recruiterRedirectParams.toString()}`;
     } else {
-      aElm.href = 'https://login.talentboozt.com/login?redirectUri='+window.location.href+'?&plat='+platform+'&ref='+referrer+'&prom='+promo;
+      aElm.href = `https://login.talentboozt.com/login?redirectUri=${currentUrl}?&${shortRedirectParams.toString()}`;
     }
     aElm.target = '_self';
     aElm.click();

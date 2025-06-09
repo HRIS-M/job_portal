@@ -9,7 +9,7 @@ import {ThemeService} from "../../../../services/theme.service";
 })
 export class OfferCard1Component implements OnInit{
 
-  isOfferActive = true;
+  isOfferActive = false;
   seatsLeft = 0;
 
   constructor(private credentialService: CredentialService,
@@ -20,10 +20,8 @@ export class OfferCard1Component implements OnInit{
   }
 
   loadAllUsers(){
-    this.credentialService.fetchCredentials().subscribe((response: any) => {
-      let users: any;
-      users = response.filter((user: any) => user.userLevel === '3');
-      this.seatsLeft = 30 - users.length;
+    this.credentialService.fetchUserCountByLevel('3').subscribe((response: any) => {
+      this.seatsLeft = 30 - parseInt(response);
       if (this.seatsLeft > 0 && this.seatsLeft <= 30) {
         this.isOfferActive = true;
       }
