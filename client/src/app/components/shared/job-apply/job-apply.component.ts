@@ -31,6 +31,7 @@ export class JobApplyComponent implements AfterViewInit, OnInit{
   unexpectedError: boolean = false;
 
   downloadURL?: any;
+  cvUploading: boolean = false;
 
   applyForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
@@ -120,6 +121,7 @@ export class JobApplyComponent implements AfterViewInit, OnInit{
   }
 
   uploadFile(event: any, filePath: string) {
+    this.cvUploading = true;
     const file = event.target.files[0];
     const maxFileSize = 3 * 1024 * 1024;
     const allowedFileTypes = ['image/png', 'image/jpeg', 'application/pdf'];
@@ -136,9 +138,11 @@ export class JobApplyComponent implements AfterViewInit, OnInit{
       this.fileUploadService.uploadFile(filePath, file).subscribe(url => {
         this.loading = false;
         this.downloadURL = url;
+        this.cvUploading = false;
         this.alertService.successMessage('Successfully uploaded resume.', 'Success');
       }, () => {
         this.loading = false;
+        this.cvUploading = false;
         this.alertService.errorMessage('Failed to upload file. Please try again.', 'Error');
       });
     }

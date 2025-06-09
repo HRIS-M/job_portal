@@ -95,7 +95,15 @@ export class CompanyJobsComponent implements OnInit, AfterViewInit{
     const platform = this.cookieService.getPlatform();
     const promo = this.cookieService.getPromotion();
     const aElm: HTMLAnchorElement = document.createElement('a');
-    aElm.href = 'https://login.talentboozt.com/register?redirectUri='+window.location.href+'?&plat='+platform+'&ref='+referrer+'&prom='+promo+'&rb=employer&lv=2';
+    const currentUrl = window.location.origin + window.location.pathname;
+    const recruiterRedirectParams = new URLSearchParams({
+      plat: platform,
+      ref: referrer,
+      prom: promo,
+      rb: 'RECRUITER',
+      lv: '2',
+    });
+    aElm.href = `https://login.talentboozt.com/login?redirectUri=${currentUrl}?&${recruiterRedirectParams.toString()}`;
     aElm.target = '_self';
     aElm.click();
   }

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import {CookieService} from "ngx-cookie-service";
 import {WindowService} from "./common/window.service";
+import {CommonService} from "./common/common.service";
+import {AlertsService} from "./alerts.service";
 
 
 @Injectable({
@@ -8,7 +10,11 @@ import {WindowService} from "./common/window.service";
 })
 export class AuthService {
 
-  constructor(private cookieService: CookieService, private windowService: WindowService) { }
+  constructor(private cookieService: CookieService,
+              private windowService: WindowService,
+              private commonService: CommonService,
+              private alertService: AlertsService
+  ) { }
 
   public createUserID(token:any){
     this.cookieService.set('user-token-id',token, {expires: 60* 60* 24* 7, path: '/', sameSite: 'Strict', secure: true});
@@ -184,5 +190,62 @@ export class AuthService {
       aElm.target = '_self';
       aElm.click();
     }
+  }
+
+  private initialized = false;
+
+  async initSSO(): Promise<boolean> {
+    if (this.initialized) return true;
+
+    if (!this.isAcceptCookies()) return false; //check localstorage
+
+    try {
+      await this.autoLogin();
+      this.initialized = true;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  autoLogin(): Promise<boolean> {
+    if (this.windowService.nativeSessionStorage) {
+      const alreadyInitialized = sessionStorage.getItem('sso-initialized');
+      if (alreadyInitialized) {
+        return Promise.resolve(true);
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      this.commonService.getSession().subscribe({
+        next: (userData) => {
+          this.createUserID(userData.employeeId);
+          this.createLevel(userData.userLevel);
+          this.unlock();
+
+          userData.organizations?.forEach((organization: any) => {
+            this.createOrganizationID(organization.TrainerPlatform || '');
+          });
+
+          this.commonService.getTokens(userData.email).subscribe((tokens) => {
+            this.createAuthToken(tokens.accessToken);
+            this.createRefreshToken(tokens.refreshToken);
+            if (this.windowService.nativeSessionStorage)
+              sessionStorage.setItem('sso-initialized', 'true');
+            resolve(true);
+          });
+        },
+        error: () => {
+          this.alertService.successMessage('Claim your free account today!', 'Talent Boozt ✨');
+          reject();
+        }
+      });
+    });
+  }
+  isAcceptCookies() {
+    if (this.windowService.nativeLocalStorage) {
+      return localStorage.getItem('TB_COOKIES_ACCEPTED') === 'true';
+    }
+    return false;
   }
 }

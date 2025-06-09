@@ -2,7 +2,7 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {AuthService} from "../../../../services/auth.service";
 import {EmployeeService} from "../../../../services/employee.service";
-import { HttpErrorResponse } from "@angular/common/http";
+import {EmployeeAuthStateService} from "../../../../services/cacheStates/employee-auth-state.service";
 
 @Component({
   selector: 'app-free-dashboard',
@@ -10,26 +10,22 @@ import { HttpErrorResponse } from "@angular/common/http";
   styleUrls: ['./free-dashboard.component.scss']
 })
 export class FreeDashboardComponent implements AfterViewInit, OnInit {
-
-  employeeId: any;
-  employeeName: any;
-  employeeEmail: any;
   employeeProfile: any;
 
-  organizationId: any;
   constructor(private router: Router,
               private route: ActivatedRoute,
               private employeeService: EmployeeService,
+              public authState: EmployeeAuthStateService,
               private cookieService: AuthService) { }
 
   ngOnInit() {
-    this.employeeId = this.cookieService.userID();
-    this.organizationId = this.cookieService.organization();
-    if (!this.organizationId || !this.employeeId) {
+    this.authState.employee$.subscribe(profile => {
+      this.employeeProfile = profile;
+    });
+    if (!this.employeeProfile.employee.id || !this.employeeProfile.employee.companyId) {
       window.location.reload();
       return;
     }
-    this.getEmployee(this.employeeId);
   }
 
   ngAfterViewInit() {
@@ -37,19 +33,6 @@ export class FreeDashboardComponent implements AfterViewInit, OnInit {
     icons.forEach((icon) => {
       icon.setAttribute('translate', 'no');
     });
-  }
-
-  getEmployee(id: any) {
-    this.employeeService.fetchFullEmployee(id).subscribe(
-      (data) => {
-        this.employeeEmail = data?.employee?.occupation;
-        this.employeeName = data?.employee?.firstname + ' ' + data?.employee?.lastname;
-        this.employeeProfile = data?.employee?.image;
-      },
-      (error: HttpErrorResponse) => {
-        console.log(error);
-      }
-    );
   }
 
   logout() {

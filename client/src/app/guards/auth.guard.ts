@@ -7,22 +7,20 @@ import {AuthService} from "../services/auth.service";
 })
 export class AuthGuard {
 
-  canActivate: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-    if (this.authService.isExists() && !this.authService.isLocked()) {
+  constructor(private cookieService: AuthService) {}
+
+  async canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+    const initialized = await this.cookieService.initSSO();
+
+    const userId = this.cookieService.userID();
+    const refreshToken = this.cookieService.isRefreshToken();
+
+    if (initialized && userId && refreshToken) {
       return true;
     } else {
-      const referrer = this.authService.getReferer();
-      const platform = this.authService.getPlatform();
-      const promo = this.authService.getPromotion();
-      const aElm: HTMLAnchorElement = document.createElement('a');
-      aElm.href = 'https://login.talentboozt.com/login?redirectUri='+window.location.href+'?&plat='+platform+'&ref='+referrer+'&prom='+promo;
-      aElm.target = '_self';
-      aElm.click();
+      this.cookieService.redirectToLogin();
       return false;
     }
-  };
-
-  constructor(private authService: AuthService) {
   }
 
 }

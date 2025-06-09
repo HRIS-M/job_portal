@@ -61,7 +61,7 @@
 
           <div class="col-12">
             <div class="form-group">
-              <button  id="PJB_JA_Apply" type="submit" class="btn-1" (click)="apply(companyId, jobId)">Send</button>
+              <button  id="PJB_JA_Apply" type="submit" class="btn-1" (click)="apply(companyId, jobId)" [disabled]="cvUploading">Send</button>
             </div>
           </div>
         </div>

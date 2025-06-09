@@ -12,7 +12,7 @@
       <div class="d-flex align-items-center">
         <div class="ms-2 dropdown">
           <div class="profile-pic me-md-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <img [src]="employeeProfile ? employeeProfile : './assets/imgs/shared/default_emp_dp.svg'"
+            <img [src]="(authState.employee$ | async)?.employee?.image || './assets/imgs/shared/default_emp_dp.svg'"
                  alt="profile">
           </div>
 
@@ -31,8 +31,8 @@
           </ul>
         </div>
         <div class="d-none d-md-flex flex-column justify-content-between profile-tag">
-          <h6>{{employeeName ? employeeName : 'not available'}}</h6>
-          <span>{{employeeEmail ? employeeEmail : 'not available'}}</span>
+          <h6>{{(authState.employee$ | async)?.employee?.firstname + ' ' + (authState.employee$ | async)?.employee?.lastname || 'not available'}}</h6>
+          <span>{{(authState.employee$ | async)?.employee?.email || 'not available'}}</span>
         </div>
       </div>
     </div>

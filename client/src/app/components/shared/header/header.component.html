@@ -4,17 +4,17 @@
          [ngStyle]="{'background-image': themeService.isDarkMode() ? 'url(./assets/imgs/logo/top-w.webp)' : 'url(./assets/imgs/logo/top-b.webp)'}"
          routerLink="/"></div>
     <div class="menu">
-      <li *ngIf="isTokenFound" class="nav-item d-block d-lg-none ms-2 dropdown">
+      <li *ngIf="authState.isLoggedIn$ | async" class="nav-item d-block d-lg-none ms-2 dropdown">
         <div class="profile-wrapper" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <img [src]="employee?.image?employee.image:'./assets/imgs/shared/default_emp_dp.svg'"
+          <img [src]="(authState.employee$ | async)?.employee?.image || './assets/imgs/shared/default_emp_dp.svg'"
                alt="profile" width="40" height="40">
         </div>
 
         <ul class="dropdown-menu dropdown-menu-end">
-          <div *ngIf="employeeType === 'employer'">
-            <li *ngIf="employeeLevel === '2'"><a class="dropdown-item" routerLink="/dashboard"><i
+          <div *ngIf="(authState.employee$ | async)?.auth?.roles?.includes('RECRUITER') || (authState.employee$ | async)?.auth?.role === 'RECRUITER'">
+            <li *ngIf="(authState.employee$ | async)?.auth?.userLevel === '2'"><a class="dropdown-item" routerLink="/dashboard"><i
               class="material-icons">autorenew</i> Switch to Dashboard</a></li>
-            <li *ngIf="employeeLevel === '3'"><a class="dropdown-item" routerLink="/pro"><i
+            <li *ngIf="(authState.employee$ | async)?.auth?.userLevel === '3'"><a class="dropdown-item" routerLink="/pro"><i
               class="material-icons">autorenew</i> Switch to Dashboard</a></li>
             <li>
               <hr class="dropdown-divider">
@@ -41,7 +41,7 @@
           </li>
         </ul>
       </li>
-      <li *ngIf="!isTokenFound" class="nav-item dropdown d-block d-lg-none" (click)="collapseNavbar()">
+      <li *ngIf="(authState.isLoggedIn$ | async) === false" class="nav-item dropdown d-block d-lg-none" (click)="collapseNavbar()">
         <button class="nav-link btn-border" role="button" data-bs-toggle="dropdown" aria-expanded="false">Sign In</button>
 
         <ul class="dropdown-menu">
@@ -117,7 +117,7 @@
                   <i class="material-icons">search</i>
                 </div>
               </li>
-              <li *ngIf="!isTokenFound" class="nav-item dropdown d-none d-lg-block" (click)="collapseNavbar()">
+              <li *ngIf="(authState.isLoggedIn$ | async) === false" class="nav-item dropdown d-none d-lg-block" (click)="collapseNavbar()">
                 <button class="nav-link btn-border" role="button" data-bs-toggle="dropdown" aria-expanded="false">Sign In</button>
 
                 <ul class="dropdown-menu">
@@ -129,17 +129,17 @@
                   </li>
                 </ul>
               </li>
-              <li *ngIf="isTokenFound" class="nav-item d-none d-lg-block ms-2 dropdown">
+              <li *ngIf="authState.isLoggedIn$ | async" class="nav-item d-none d-lg-block ms-2 dropdown">
                 <div class="profile-wrapper" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img [src]="employee?.image?employee.image:'./assets/imgs/shared/default_emp_dp.svg'"
+                  <img [src]="(authState.employee$ | async)?.employee?.image || './assets/imgs/shared/default_emp_dp.svg'"
                        alt="profile" width="40" height="40">
                 </div>
 
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <div *ngIf="employeeType === 'employer'">
-                    <li *ngIf="employeeLevel === '2'"><a class="dropdown-item" routerLink="/dashboard"><i
+                  <div *ngIf="(authState.employee$ | async)?.auth?.roles?.includes('RECRUITER') || (authState.employee$ | async)?.auth?.role === 'RECRUITER'">
+                    <li *ngIf="(authState.employee$ | async)?.auth?.userLevel === '2'"><a class="dropdown-item" routerLink="/dashboard"><i
                       class="material-icons">autorenew</i> Switch to Dashboard</a></li>
-                    <li *ngIf="employeeLevel === '3'"><a class="dropdown-item" routerLink="/pro"><i
+                    <li *ngIf="(authState.employee$ | async)?.auth?.userLevel === '3'"><a class="dropdown-item" routerLink="/pro"><i
                       class="material-icons">autorenew</i> Switch to Dashboard</a></li>
                     <li>
                       <hr class="dropdown-divider">

@@ -65,32 +65,6 @@ export class ApplicantsDbComponent implements AfterViewInit, OnInit {
     });
   }
 
-  fetchApplicants() {
-    this.loading = true;
-    this.jobApplyService.fetchJobApplyByCompanyId(this.companyId).subscribe((data: any) => {
-      this.jobApplicants = data?.map((job: any) => ({
-        ...job,
-        showAllApplicants: false
-      }));
-      this.loading = false;
-    }, (error: HttpErrorResponse) => {
-      // Check for different error types
-      if (error.status === 404) {
-        this.notFound = true;
-      } else if (error.status === 500) {
-        this.serverError = true;
-      } else if (error.status === 0) {
-        this.corsError = true;
-      } else if (error.status === 403) {
-        this.forbidden = true;
-      } else {
-        this.unexpectedError = true;
-      }
-
-      this.loading = false;
-    });
-  }
-
   viewCandidateProfile(employeeId: any) {
     if (employeeId) {
       this.router.navigate(['/candidate-profile'], { queryParams: { id: employeeId } });
@@ -153,6 +127,9 @@ export class ApplicantsDbComponent implements AfterViewInit, OnInit {
     if (id){
       if (this.companyLevel == 3){
         this.router.navigate(['/pro/post-job'], {relativeTo: this.route, queryParams: {id: id}});
+        return;
+      } else if (this.companyLevel == 2){
+        this.router.navigate(['/dashboard/post-job'], {relativeTo: this.route, queryParams: {id: id}});
         return;
       }
     }

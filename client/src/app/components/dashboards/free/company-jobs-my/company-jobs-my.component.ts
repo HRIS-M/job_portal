@@ -85,6 +85,9 @@ export class CompanyJobsMyComponent implements AfterViewInit, OnInit{
       if (this.companyLevel == 3){
         this.router.navigate(['/pro/post-job'], {relativeTo: this.route, queryParams: {id: id}});
         return;
+      } else if (this.companyLevel == 2){
+        this.router.navigate(['/dashboard/post-job'], {relativeTo: this.route, queryParams: {id: id}});
+        return;
       }
     }
   }

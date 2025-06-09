@@ -1,0 +1,42 @@
+export interface EmployeeProfile {
+  employee: {
+    id?: string;
+    firstname?: string;
+    lastname?: string;
+    occupation?: string;
+    image?: string;
+    coverImage?: string;
+    dob?: string;
+    email?: string;
+    resume?: string;
+    intro?: string;
+    skills?: string;
+    experiences?: string;
+    education?: string;
+    projects?: string;
+    certificates?: string;
+    contactInfo?: string;
+    courses?: string;
+    followings?: string;
+    followers?: string;
+    savedJobs?: any[];
+    accountNotifications?: any;
+    marketingNotifications?: any;
+    profileCompleted?: any;
+    profileStatus?: string;
+    companyId?: string;
+    expectedSalaryRange?: string;
+    currentExperience?: string;
+    keywords?: string;
+  };
+  empContact?: any;
+  empEducation?: any;
+  empSkills?: any;
+  empExperiences?: any;
+  empProjects?: any;
+  empCertificates?: any;
+  auth?: any;
+  empFollowers?: any;
+  empFollowing?: any;
+  empCourses?: any;
+}

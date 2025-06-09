@@ -13,6 +13,10 @@ export class CredentialService {
 
   constructor(private http: HttpClient) { }
 
+  fetchUserCountByLevel(level: any): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/portal_credentials/getUserCountByLevel/${level}`);
+  }
+
   fetchCredentials(): Observable<any> {
     const headers = new HttpHeaders({
       'Authorization': 'Basic ' + btoa('admin:password')
