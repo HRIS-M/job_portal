@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {ValueIncrementService} from "../../../services/value-increment.service";
 import {EmployeeService} from "../../../services/employee.service";
 import {AuthService} from "../../../services/auth.service";
@@ -41,6 +41,7 @@ export class JobDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   unexpectedError: boolean = false;
 
   constructor(private router: Router,
+              private route: ActivatedRoute,
               private valueIncrementService: ValueIncrementService,
               private employeeService: EmployeeService,
               private companyService: CompanyService,
@@ -49,11 +50,17 @@ export class JobDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
               private toastr: ToastrService ) { }
 
   ngOnInit(): void {
-    this.jobPostId = this.router.url.split('/')[2];
-    this.employeeId = this.cookieService.userID();
-    this.filterJobData();
-    this.getEmployee(this.employeeId);
-    this.getAllJobs();
+    this.route.paramMap.subscribe(params => {
+      this.jobPostId = params.get('id');
+      this.employeeId = this.cookieService.userID();
+      this.filterJobData();
+      if (this.employeeId){
+        this.getEmployee(this.employeeId);
+      }
+      if (this.jobPostId) {
+        this.getAllJobs();
+      }
+    });
   }
 
   ngAfterViewInit() {

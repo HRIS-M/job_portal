@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
 import {CompanyService} from "../../services/company.service";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
@@ -47,6 +47,7 @@ export class BusinessProfileComponent implements OnInit, AfterViewInit{
   me: any;
 
   constructor(private router: Router,
+              private route: ActivatedRoute,
               private companyService: CompanyService,
               private employeeService: EmployeeService,
               private cookieService: AuthService,
@@ -54,13 +55,17 @@ export class BusinessProfileComponent implements OnInit, AfterViewInit{
               private alertService: AlertsService) { }
 
   ngOnInit(): void {
-    this.companyId = this.router.url.split('/')[2];
     this.myId = this.cookieService.userID();
-    this.getCompany(this.companyId)
-    this.filterCompanyData();
-    this.filterSocialsData();
-    this.filterPostedJobsData();
-    this.getEmployee(this.myId);
+    this.route.paramMap.subscribe(params => {
+      this.companyId = params.get('id');
+      this.getCompany(this.companyId)
+      this.filterCompanyData();
+      this.filterSocialsData();
+      this.filterPostedJobsData();
+    });
+    if (this.myId) {
+      this.getEmployee(this.myId);
+    }
   }
 
   getCompany(id: any) {
