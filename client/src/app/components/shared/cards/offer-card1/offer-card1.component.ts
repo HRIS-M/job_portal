@@ -21,8 +21,8 @@ export class OfferCard1Component implements OnInit{
 
   loadAllUsers(){
     this.credentialService.fetchUserCountByLevel('3').subscribe((response: any) => {
-      this.seatsLeft = 30 - parseInt(response);
-      if (this.seatsLeft > 0 && this.seatsLeft <= 30) {
+      this.seatsLeft = 20 - parseInt(response);
+      if (this.seatsLeft > 0 && this.seatsLeft <= 20) {
         this.isOfferActive = true;
       }
     });
