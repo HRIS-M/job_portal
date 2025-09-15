@@ -106,13 +106,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   async startApp() {
     this.fetchTokensFromLogin();
 
-    try {
-      await this.autoLogin();
-      this.authStateService.initializeUser().subscribe();
-    } catch {
-      // Do nothing
-    }
-
     this.route.queryParams.subscribe(params => {
       const platform = params['platform'] || 'jobPortal';
       const ref = params['ref'] || 'talentboozt';
@@ -121,6 +114,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.cookieService.createReferer(ref);
       this.cookieService.createPromotion(promo);
     });
+
+    try {
+      await this.autoLogin();
+      this.authStateService.initializeUser().subscribe();
+    } catch {
+      // Do nothing
+    }
 
     this.employeeId = this.cookieService.userID();
     this.employeeLevel = this.cookieService.level();

@@ -155,10 +155,13 @@
       </div>
     </div>
   </div>
+  <div *ngIf="loading">
+    <app-page-loading></app-page-loading>
+  </div>
   <div *ngIf="!loading && serverError">
     <app-failed-to-load-data></app-failed-to-load-data>
   </div>
-  <div *ngIf="notFound && filterJobData().length == 0">
+  <div *ngIf="!loading && (notFound && filterJobData().length == 0)">
     <app-result-not-found></app-result-not-found>
   </div>
   <div *ngIf="corsError">

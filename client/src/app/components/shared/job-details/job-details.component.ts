@@ -92,6 +92,7 @@ export class JobDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getAllJobs() {
+    this.loading = true;
     this.companyService.fetchAllPostedJobs().subscribe((data) => {
       data.forEach((company: any) => {
         company.postedJobs.forEach((job: any) => {
@@ -103,6 +104,7 @@ export class JobDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.jobDataStore.push(job);
         });
       });
+      this.loading = false;
     },(error: HttpErrorResponse) => {
       // Check for different error types
       if (error.status === 404) {

@@ -2,12 +2,11 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 
 @Component({
-  selector: 'app-thank-you',
-  templateUrl: './thank-you.component.html',
-  styleUrls: ['./thank-you.component.scss']
+  selector: 'app-payment-cancel',
+  templateUrl: './payment-cancel.component.html',
+  styleUrl: './payment-cancel.component.scss'
 })
-export class ThankYouComponent implements OnInit{
-
+export class PaymentCancelComponent implements OnInit{
   redirectUrl: string = '';
 
   constructor(private route: ActivatedRoute) {

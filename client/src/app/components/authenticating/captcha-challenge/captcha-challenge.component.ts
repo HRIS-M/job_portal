@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import {RecaptchaModule} from "ng-recaptcha";
 import {HttpClient} from "@angular/common/http";
-import {AuthService} from "../../../services/auth.service";
 import {environment} from "../../../../environments/environment";
+import {WindowService} from "../../../services/common/window.service";
 
 @Component({
   selector: 'app-captcha-challenge',
@@ -17,7 +17,7 @@ export class CaptchaChallengeComponent {
   captchaToken: string | null = null;
   baseurl = environment.apiUrlSimple
 
-  constructor(private http: HttpClient, private authService: AuthService) {
+  constructor(private http: HttpClient, private windowService: WindowService) {
   }
 
   onCaptchaResolved(token: any) {
@@ -27,8 +27,12 @@ export class CaptchaChallengeComponent {
   submitCaptcha() {
     this.http.post(`${this.baseurl}/api/security/verify-captcha`, {
       captchaToken: this.captchaToken
-    }).subscribe({
+    }, { withCredentials: true }).subscribe({
       next: () => {
+        if (this.windowService.nativeSessionStorage) {
+          sessionStorage.setItem('captcha_verified', 'true');
+          sessionStorage.setItem('captcha_verified_at', Date.now().toString());
+        }
         history.back();
       },
       error: () => {

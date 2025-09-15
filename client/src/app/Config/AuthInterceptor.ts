@@ -36,16 +36,26 @@ export class AuthInterceptor implements HttpInterceptor {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           'X-Session-Id': sessionId,
           'X-Offset': offset
-        }
+        },
+        withCredentials: true
       });
     }
 
     return next.handle(request).pipe(
       tap((event: HttpEvent<any>) => {
         if (event instanceof HttpResponse) {
-          const mismatch = event.headers.get('X-Timezone-Mismatch');
-          if (mismatch === 'true') {
-            this.router.navigate(['/captcha-challenge']);
+          if (this.windowService.nativeSessionStorage) {
+            const mismatch = event.headers.get('X-Timezone-Mismatch');
+            const captchaVerified = sessionStorage.getItem('captcha_verified') === 'true';
+            const verifiedAt = parseInt(sessionStorage.getItem('captcha_verified_at') || '0', 10);
+            const now = Date.now();
+
+            const captchaStillValid = captchaVerified && (now - verifiedAt < 60 * 60 * 1000); // 60 min
+
+            if (mismatch === 'true' && !captchaStillValid) {
+              sessionStorage.removeItem('captcha_verified'); // Just in case
+              this.router.navigate(['/captcha-challenge']);
+            }
           }
         }
       }),
@@ -76,7 +86,8 @@ export class AuthInterceptor implements HttpInterceptor {
               Authorization: `Bearer ${newToken}`,
               'X-Session-Id': sessionId,
               'X-Offset': String(new Date().getTimezoneOffset())
-            }
+            },
+            withCredentials: true
           });
           return next.handle(request);
         }),
@@ -100,7 +111,8 @@ export class AuthInterceptor implements HttpInterceptor {
             Authorization: `Bearer ${newToken}`,
             'X-Session-Id': sessionId,
             'X-Offset': String(new Date().getTimezoneOffset())
-          }
+          },
+          withCredentials: true
         });
         return next.handle(request);
       })
@@ -113,7 +125,7 @@ export class AuthInterceptor implements HttpInterceptor {
       return throwError('No refresh token available');
     }
 
-    return this.http.post<{ token: string }>(`${this.baseUrlSimple}/api/auth/refresh-token`, { refreshToken }).pipe(
+    return this.http.post<{ token: string }>(`${this.baseUrlSimple}/api/auth/refresh-token`, { refreshToken }, { withCredentials: true }).pipe(
       map((response) => {
         const newToken = response.token;
         this.authService.createAuthToken(newToken);
