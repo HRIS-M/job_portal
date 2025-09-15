@@ -55,6 +55,7 @@ const routes: Routes = [
   { path: 'bank-checkout', loadChildren: () => import('./components/payments/bank-checkout/bank-checkout.module').then(m => m.BankCheckoutModule) },
   { path: 'pre-order', loadChildren: () => import('./components/shared/pre-order/pre-order.module').then(m => m.PreOrderModule) },
   { path: 'thank-you', loadChildren: () => import('./components/shared/thank-you/thank-you.module').then(m => m.ThankYouModule) },
+  { path: 'stripe/cancel', loadChildren: () => import('./components/shared/payment-cancel/payment-cancel.module').then(m => m.PaymentCancelModule) },
   { path: 'follow', loadChildren: () => import('./components/shared/emp-follow-wrap/emp-follow-wrap.module').then(m => m.EmpFollowWrapModule) },
   { path: 'soon', loadChildren: () => import('./components/shared/comming-soon/comming-soon.module').then(m => m.CommingSoonModule) },
   { path: 'pay', loadChildren: () => import('./components/payments/stripe-element/stripe-element.module').then(m => m.StripeElementModule) },
